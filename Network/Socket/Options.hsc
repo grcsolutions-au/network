@@ -397,6 +397,49 @@ pattern RecvIPv6PktInfo = SockOpt (-1) (-1)
 #endif
 #endif // HAVE_DECL_IPPROTO_IPV6
 
+
+#ifdef IP_MULTICAST_IF
+pattern MulticastIF :: SocketOption
+pattern MulticastIF = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_IF)
+#else
+pattern MulticastIF :: SocketOption
+pattern MulticastIF = SockOpt (-1) (-1)
+#endif
+
+
+#ifdef IP_MULTICAST_TTL
+pattern MulticastTTL :: SocketOption
+pattern MulticastTTL = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_TTL)
+#else
+pattern MulticastTTL :: SocketOption
+pattern MulticastTTL = SockOpt (-1) (-1)
+#endif
+
+#ifdef IP_MULTICAST_LOOP
+pattern MulticastLoop :: SocketOption
+pattern MulticastLoop = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_LOOP)
+#else
+pattern MulticastLoop :: SocketOption
+pattern MulticastLoop = SockOpt (-1) (-1)
+#endif
+
+#ifdef IP_ADD_MEMBERSHIP
+pattern AddMembership :: SocketOption
+pattern AddMembership = SockOpt (#const IPPROTO_IP) (#const IP_ADD_MEMBERSHIP)
+#else
+pattern AddMembership :: SocketOption
+pattern AddMembership = SockOpt (-1) (-1)
+#endif
+
+#ifdef IP_DROP_MEMBERSHIP
+pattern DropMembership :: SocketOption
+pattern DropMembership = SockOpt (#const IPPROTO_IP) (#const IP_DROP_MEMBERSHIP)
+#else
+pattern DropMembership :: SocketOption
+pattern DropMembership = SockOpt (-1) (-1)
+#endif
+
+
 pattern CustomSockOpt :: (CInt, CInt) -> SocketOption
 pattern CustomSockOpt xy <- ((\(SockOpt x y) -> (x, y)) -> xy)
   where
