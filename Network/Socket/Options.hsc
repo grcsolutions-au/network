@@ -397,7 +397,7 @@ pattern RecvIPv6PktInfo = SockOpt (-1) (-1)
 #endif
 #endif // HAVE_DECL_IPPROTO_IPV6
 
-
+-- | Multicast interface.
 #ifdef IP_MULTICAST_IF
 pattern MulticastIF :: SocketOption
 pattern MulticastIF = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_IF)
@@ -405,8 +405,7 @@ pattern MulticastIF = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_IF)
 pattern MulticastIF :: SocketOption
 pattern MulticastIF = SockOpt (-1) (-1)
 #endif
-
-
+-- | Multicast TTL.
 #ifdef IP_MULTICAST_TTL
 pattern MulticastTTL :: SocketOption
 pattern MulticastTTL = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_TTL)
@@ -414,7 +413,7 @@ pattern MulticastTTL = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_TTL)
 pattern MulticastTTL :: SocketOption
 pattern MulticastTTL = SockOpt (-1) (-1)
 #endif
-
+-- | Multicast loopback.
 #ifdef IP_MULTICAST_LOOP
 pattern MulticastLoop :: SocketOption
 pattern MulticastLoop = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_LOOP)
@@ -422,7 +421,7 @@ pattern MulticastLoop = SockOpt (#const IPPROTO_IP) (#const IP_MULTICAST_LOOP)
 pattern MulticastLoop :: SocketOption
 pattern MulticastLoop = SockOpt (-1) (-1)
 #endif
-
+-- | Add membership.
 #ifdef IP_ADD_MEMBERSHIP
 pattern AddMembership :: SocketOption
 pattern AddMembership = SockOpt (#const IPPROTO_IP) (#const IP_ADD_MEMBERSHIP)
@@ -430,7 +429,7 @@ pattern AddMembership = SockOpt (#const IPPROTO_IP) (#const IP_ADD_MEMBERSHIP)
 pattern AddMembership :: SocketOption
 pattern AddMembership = SockOpt (-1) (-1)
 #endif
-
+-- | Drop membership.
 #ifdef IP_DROP_MEMBERSHIP
 pattern DropMembership :: SocketOption
 pattern DropMembership = SockOpt (#const IPPROTO_IP) (#const IP_DROP_MEMBERSHIP)
