@@ -405,6 +405,9 @@ module Network.Socket (
 
     -- * Deprecated
     withSocketsDo,
+
+    -- * Multicast Group
+    MulticastGroup (..),
 ) where
 
 import Network.Socket.Buffer hiding (
