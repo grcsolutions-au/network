@@ -170,7 +170,12 @@ module Network.Socket (
         DontFragment,
         RecvIPv6HopLimit,
         RecvIPv6TClass,
-        RecvIPv6PktInfo
+        RecvIPv6PktInfo,
+        MulticastIF,
+        MulticastTTL,
+        MulticastLoop,
+        AddMembership,
+        DropMembership
     ),
     isSupportedSocketOption,
     whenSupported,
@@ -400,6 +405,9 @@ module Network.Socket (
 
     -- * Deprecated
     withSocketsDo,
+
+    -- * Multicast Group
+    MulticastGroup (..),
 ) where
 
 import Network.Socket.Buffer hiding (
