@@ -74,6 +74,7 @@ import Network.Socket.Types
 -- >>> Network.Socket.bind sock (addrAddress addr)
 -- >>> getSocketName sock
 -- 127.0.0.1:5000
+#if HAVE_SOCKET
 socket :: Family         -- Family Name (usually AF_INET)
        -> SocketType     -- Socket Type (usually Stream)
        -> ProtocolNumber -- Protocol Number (getProtocolByName to find value)
@@ -137,6 +138,11 @@ socket family stype protocol =
       return ()
 #endif
 
+#else
+socket _ _ _ = unsupported "socket"
+{-# WARNING socket "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
+
 
 -----------------------------------------------------------------------------
 -- Binding a socket
@@ -147,15 +153,20 @@ socket family stype protocol =
 -- 'defaultPort' is passed then the system assigns the next available
 -- use port.
 bind :: SocketAddress sa => Socket -> sa -> IO ()
+#ifdef HAVE_BIND
 bind s sa = withSocketAddress sa $ \p_sa siz -> void $ withFdSocket s $ \fd -> do
   let sz = fromIntegral siz
   throwSocketErrorIfMinus1Retry "Network.Socket.bind" (c_bind fd p_sa sz)
+#else
+bind _ _ = unsupported "bind"
+#endif
 
 -----------------------------------------------------------------------------
 -- Connecting a socket
 
 -- | Connect to a remote socket at address.
 connect :: SocketAddress sa => Socket -> sa -> IO ()
+#ifdef HAVE_CONNECT
 connect s sa = withSocketsDo $ withSocketAddress sa $ \p_sa sz ->
     connectLoop s p_sa (fromIntegral sz)
 
@@ -181,6 +192,10 @@ connectLoop s p_sa sz = withFdSocket s $ \fd -> loop fd
        err <- getSocketOption s SoError
        when (err /= 0) $ throwSocketErrorCode errLoc (fromIntegral err)
 #endif
+#else
+connect _ _ = unsupported "connect"
+{-# WARNING connect "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
 
 -----------------------------------------------------------------------------
 -- Listen
@@ -189,11 +204,16 @@ connectLoop s p_sa sz = withFdSocket s $ \fd -> loop fd
 -- specifies the maximum number of queued connections and should be at
 -- least 1; the maximum value is system-dependent (usually 5).
 listen :: Socket -> Int -> IO ()
+#ifdef HAVE_LISTEN
 listen s backlog = withFdSocket s listen' `annotateIOException` show s
   where
     listen' fd =
         throwSocketErrorIfMinus1Retry_ "Network.Socket.listen" $
             c_listen fd $ fromIntegral backlog
+#else
+listen _ _ = unsupported "listen"
+{-# WARNING listen "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
 
 -----------------------------------------------------------------------------
 -- Accept
@@ -248,14 +268,22 @@ accept listing_sock = withNewSocketAddress $ \new_sa sz ->
 # endif /* HAVE_ADVANCED_SOCKET_FLAGS */
 #endif
 
+#ifdef HAVE_SOCKET
 foreign import CALLCONV unsafe "socket"
   c_socket :: CInt -> CInt -> CInt -> IO CSocket
+#endif
+#ifdef HAVE_BIND
 foreign import CALLCONV unsafe "bind"
   c_bind :: CSocket -> Ptr sa -> CInt{-CSockLen???-} -> IO CInt
+#endif
+#ifdef HAVE_CONNECT
 foreign import CALLCONV SAFE_ON_WIN "connect"
   c_connect :: CSocket -> Ptr sa -> CInt{-CSockLen???-} -> IO CInt
+#endif
+#ifdef HAVE_LISTEN
 foreign import CALLCONV unsafe "listen"
   c_listen :: CSocket -> CInt -> IO CInt
+#endif
 
 #ifdef HAVE_ADVANCED_SOCKET_FLAGS
 foreign import CALLCONV unsafe "accept4"

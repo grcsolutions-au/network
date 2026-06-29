@@ -81,6 +81,7 @@ WSARecvMsg (SOCKET s, LPWSAMSG lpMsg, LPDWORD lpdwNumberOfBytesRecvd,
   return res;
 }
 #else
+#ifdef HAVE_STRUCT_CMSGHDR
 struct cmsghdr *cmsg_firsthdr(struct msghdr *mhdr) {
   return (CMSG_FIRSTHDR(mhdr));
 }
@@ -100,4 +101,5 @@ size_t cmsg_space(size_t l) {
 size_t cmsg_len(size_t l) {
   return (CMSG_LEN(l));
 }
+#endif
 #endif /* _WIN32 */

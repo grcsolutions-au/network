@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 
+#include "HsNet.h"
 ##include "HsNetDef.h"
 #if defined(mingw32_HOST_OS)
 #  include "winsock2.h"
@@ -88,6 +89,7 @@ sendBufTo :: SocketAddress sa =>
           -> Int         -- Data to send
           -> sa
           -> IO Int      -- Number of Bytes sent
+#ifdef HAVE_SENDTO
 sendBufTo s ptr nbytes sa =
   withSocketAddress sa $ \p_sa siz -> fromIntegral <$> do
     withFdSocket s $ \fd -> do
@@ -96,6 +98,10 @@ sendBufTo s ptr nbytes sa =
             flags = 0
         throwSocketErrorWaitWrite s "Network.Socket.sendBufTo" $
           c_sendto fd ptr n flags p_sa sz
+#else
+sendBufTo _ _ _ _ = unsupported "sendBufTo"
+{-# WARNING sendBufTo "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
 
 #if defined(mingw32_HOST_OS)
 socket2FD :: Socket -> IO FD
@@ -144,6 +150,7 @@ sendBuf s str len = fromIntegral <$> do
 -- NOTE: blocking on Windows unless you compile with -threaded (see
 -- GHC ticket #1129)
 recvBufFrom :: SocketAddress sa => Socket -> Ptr a -> Int -> IO (Int, sa)
+#ifdef HAVE_RECVFROM
 recvBufFrom s ptr nbytes
     | nbytes <= 0 = ioError (mkInvalidRecvArgError "Network.Socket.recvBufFrom")
     | otherwise   =
@@ -165,6 +172,10 @@ recvBufFromImpl s ptr nbytes =
             sockaddr <- peekSocketAddress ptr_sa
                 `catchIOError` \_ -> getPeerName s
             return (fromIntegral len, sockaddr)
+#else
+recvBufFrom _ _ _ = unsupported "recvBufFrom"
+{-# WARNING recvBufFrom "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
 
 ##if __IO_MANAGER_WINIO__ >= 2
 recvBufFromWinIO :: SocketAddress sa => Socket -> Ptr a -> Int -> IO (Int, sa)
@@ -339,6 +350,7 @@ sendBufMsg :: SocketAddress sa
            -> [Cmsg]            -- ^ Control messages
            -> MsgFlag           -- ^ Message flags
            -> IO Int            -- ^ The length actually sent
+#ifdef HAVE_STRUCT_CMSGHDR
 sendBufMsg s sa bufsizs cmsgs flags = do
   sz <- withSocketAddress sa $ \addrPtr addrSize ->
 #if !defined(mingw32_HOST_OS)
@@ -372,6 +384,10 @@ sendBufMsg s sa bufsizs cmsgs flags = do
                 c_sendmsg fd msgHdrPtr (fromIntegral cflags) send_ptr nullPtr nullPtr
 #endif
   return $ fromIntegral sz
+#else
+sendBufMsg _ _ _ _ _ = unsupported "sendBufMsg"
+{-# WARNING sendBufMsg "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
 
 -- | Receive data from the socket using recvmsg(2). The supplied
 --   buffers are filled in order, with subsequent buffers used only
@@ -387,6 +403,7 @@ recvBufMsg :: SocketAddress sa
                                 --   'MSG_CTRUNC' is returned
            -> MsgFlag           -- ^ Message flags
            -> IO (sa,Int,[Cmsg],MsgFlag) -- ^ Source address, total bytes received, control messages and message flags
+#ifdef HAVE_STRUCT_CMSGHDR
 recvBufMsg s bufsizs clen flags = do
   withNewSocketAddress $ \addrPtr addrSize ->
     allocaBytes clen $ \ctrlPtr ->
@@ -443,6 +460,10 @@ recvBufMsg s bufsizs clen flags = do
 #endif
 
             return (sockaddr, len, cmsgs, flags')
+#else
+recvBufMsg _ _ _ _ = unsupported "recvBufMsg"
+{-# WARNING recvBufMsg "operation will throw 'IOError' \"unsupported operation\"" #-}
+#endif
 
 #if !defined(mingw32_HOST_OS)
 foreign import ccall unsafe "send"
@@ -519,7 +540,11 @@ recvBufMsgWinIO fd msgHdrPtr = do
 
 foreign import ccall unsafe "recv"
   c_recv :: CSocket -> Ptr CChar -> CSize -> CInt -> IO CInt
+#ifdef HAVE_SENDTO
 foreign import CALLCONV SAFE_ON_WIN "sendto"
   c_sendto :: CSocket -> Ptr a -> CSize -> CInt -> Ptr sa -> CInt -> IO CInt
+#endif
+#ifdef HAVE_RECVFROM
 foreign import CALLCONV SAFE_ON_WIN "recvfrom"
   c_recvfrom :: CSocket -> Ptr a -> CSize -> CInt -> Ptr sa -> Ptr CInt -> IO CInt
+#endif

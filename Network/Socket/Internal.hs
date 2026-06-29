@@ -52,6 +52,9 @@ module Network.Socket.Internal
     -- * Null socket address type
     , NullSockAddr (..)
 
+    -- * Unsupported functionality
+    , unsupported
+
     -- * Low-level helpers
     , zeroMemory
     ) where
