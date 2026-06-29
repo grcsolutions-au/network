@@ -1,10 +1,10 @@
-resolver: nightly-2025-10-01
+resolver: lts-24.46
 
 packages:
 - '.'
 
 nix:
-  packages: [ ncurses ]
+  packages: [ autoconf ]
 
 # XXX workaround
 # https://github.com/commercialhaskell/stack/issues/2245
